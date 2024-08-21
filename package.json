@@ -3,12 +3,22 @@
 	"displayName": "extension-manager",
 	"description": "Manage your extensions using Gitlab packages",
 	"version": "1.0.0",
+	"publisher": "Delgadillox",
 	"engines": {
 		"vscode": "^1.92.0"
 	},
+	"icon": "logo.png",
 	"categories": [
 		"Other"
 	],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/Delgadillox/extension-manager"
+	},
+	"bugs": {
+		"url": "https://github.com/Delgadillox/extension-manager/issues"
+	},
+	"homepage": "https://github.com/Delgadillox/extension-manager#readme",
 	"activationEvents": [],
 	"main": "./out/extension.js",
 	"contributes": {
