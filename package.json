@@ -1,6 +1,6 @@
 {
-	"name": "extension-manager",
-	"displayName": "extension-manager",
+	"name": "extension-manager-gitlab",
+	"displayName": "Extension Manager Gitlab",
 	"description": "Manage your extensions using Gitlab packages",
 	"version": "1.0.0",
 	"publisher": "Delgadillox",
