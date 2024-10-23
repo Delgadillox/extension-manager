@@ -60,6 +60,11 @@
 						"type": "string",
 						"default": "",
 						"description": "Gitlab project ID"
+					},
+					"extension-manager.gitlabHost": {
+						"type": "string",
+						"default": "gitlab.com",
+						"description": "Gitlab host"
 					}
 				}
 			}
