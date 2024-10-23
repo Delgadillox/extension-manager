@@ -3,11 +3,12 @@ import * as vscode from 'vscode';
 import { ExtensionItem } from '../classes/ExtensionItem';
 
 export async function getExtensions(
-	context: vscode.ExtensionContext,
-	token: string,
-	projectId: string
+  context: vscode.ExtensionContext,
+  token: string,
+  gitlabHost: string,
+  projectId: string
 ) {
-	const url = `https://gitlab.com/api/v4/projects/${projectId}/packages`;
+  const url = `https://${gitlabHost}/api/v4/projects/${projectId}/packages`;
 
 	try {
 		const response = await axios.get(url, {
@@ -18,7 +19,7 @@ export async function getExtensions(
 
 		// Map each package to fetch its details
 		const packageRequests = response.data.map(async (pkg: any) => {
-			const packageUrl = `https://gitlab.com/api/v4/projects/${projectId}/packages/${pkg.id}`;
+			const packageUrl = `https://${gitlabHost}/api/v4/projects/${projectId}/packages/${pkg.id}`;
 			try {
 				const pkgResponse = await axios.get(packageUrl, {
 					headers: {
@@ -27,7 +28,7 @@ export async function getExtensions(
 				});
 
 				const packageInfo = pkgResponse.data;
-				const filesUrl = `https://gitlab.com/api/v4/projects/${projectId}/packages/${pkg.id}/package_files`;
+				const filesUrl = `https://${gitlabHost}/api/v4/projects/${projectId}/packages/${pkg.id}/package_files`;
 
 				const filesResponse = await axios.get(filesUrl, {
 					headers: {
@@ -44,7 +45,7 @@ export async function getExtensions(
 				}
 
 				const file = filesResponse.data[0];
-				const fileUri = `https://gitlab.com/api/v4/projects/${projectId}/packages/${pkg.id}/package_files/${file.id}/download`;
+				const fileUri = `https://${gitlabHost}/api/v4/projects/${projectId}/packages/${pkg.id}/package_files/${file.id}/download`;
 				const fileName = file?.file_name || 'unknown';
 				const extensionItem = new ExtensionItem(
 					packageInfo.name,

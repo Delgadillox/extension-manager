@@ -6,7 +6,7 @@ The "extension-manager" extension for Visual Studio Code allows you to easily ma
 
 - **Marketplace View**: Browse and install extensions from a GitLab repository.
 - **Installed View**: View and manage installed extensions, including uninstalling them with confirmation prompts.
-- **Global Configuration**: Set up your GitLab token, project ID, and other settings.
+- **Global Configuration**: Set up your GitLab token, GitlabHost (optional), project ID, and other settings.
 
 ## Requirements
 
@@ -19,6 +19,7 @@ This extension contributes the following settings:
 
 - `extensionManager.token`: GitLab personal access token.
 - `extensionManager.projectId`: GitLab project ID.
+- `extension-manager.gitlabHost`: (Optional) gitlab host. (defaults to gitlab.com)
 
 ## Known Issues
 

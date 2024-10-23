@@ -23,6 +23,7 @@ export class MarketplaceViewProvider
 	constructor(
 		private context: vscode.ExtensionContext,
 		private token: string,
+		private gitlabHost: string,
 		private projectId: string
 	) {
 		this.initialize();
@@ -50,7 +51,7 @@ export class MarketplaceViewProvider
 	}
 
 	installVsix(extensionItem: ExtensionItem) {
-		const vsixUrl = `https://gitlab.com/api/v4/projects/${this.projectId}/packages/generic/${extensionItem.label}/${extensionItem.version}/${extensionItem.file_name}`;
+		const vsixUrl = `https://${this.gitlabHost}/api/v4/projects/${this.projectId}/packages/generic/${extensionItem.label}/${extensionItem.version}/${extensionItem.file_name}`;
 
 		axios({
 			url: vsixUrl,

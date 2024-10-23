@@ -17,6 +17,9 @@ export async function activate(context: vscode.ExtensionContext) {
 	const token = vscode.workspace
 		.getConfiguration()
 		.get<string>('extension-manager.token');
+	const gitlabHost = vscode.workspace
+		.getConfiguration()
+		.get<string>('extension-manager.gitlabHost');
 	const projectId = vscode.workspace
 		.getConfiguration()
 		.get<string>('extension-manager.projectId');
@@ -26,13 +29,14 @@ export async function activate(context: vscode.ExtensionContext) {
 		return;
 	}
 
-	await getExtensions(context, token, projectId);
+	await getExtensions(context, token, gitlabHost, projectId);
 	await getInstalledExtensions(context);
 	await getMarketplaceExtensions(context);
 
 	const marketplaceProvider = new MarketplaceViewProvider(
 		context,
 		token,
+		gitlabHost,
 		projectId
 	);
 
