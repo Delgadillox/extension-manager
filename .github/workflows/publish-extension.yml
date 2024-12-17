@@ -1,0 +1,37 @@
+name: Publish VS Code Extension
+
+on:
+  release:
+    types: [created] # Trigger when a release is created
+
+jobs:
+  publish:
+    name: Build and Publish Extension
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout repository
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Step 2: Set up Node.js
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      # Step 3: Install dependencies
+      - name: Install dependencies
+        run: npm install
+
+      # Step 4: Install vsce CLI
+      - name: Install VSCE CLI
+        run: npm install -g @vscode/vsce
+
+      # Step 5: Package the extension
+      - name: Package the extension
+        run: vsce package
+
+      # Step 6: Publish the extension
+      - name: Publish to Visual Studio Marketplace
+        run: vsce publish -p ${{ secrets.VSCE_TOKEN }}
