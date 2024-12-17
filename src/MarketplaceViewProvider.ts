@@ -51,7 +51,7 @@ export class MarketplaceViewProvider
 	}
 
 	installVsix(extensionItem: ExtensionItem) {
-		const vsixUrl = `https://${this.gitlabHost}/api/v4/projects/${this.projectId}/packages/generic/${extensionItem.label}/${extensionItem.version}/${extensionItem.file_name}`;
+		const vsixUrl = `https://${this.gitlabHost}/api/v4/projects/${extensionItem.projectId}/packages/generic/${extensionItem.label}/${extensionItem.version}/${extensionItem.file_name}`;
 
 		axios({
 			url: vsixUrl,

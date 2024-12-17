@@ -23,13 +23,20 @@ export async function activate(context: vscode.ExtensionContext) {
 	const projectId = vscode.workspace
 		.getConfiguration()
 		.get<string>('extension-manager.projectId');
+	let type = vscode.workspace
+		.getConfiguration()
+		.get<string>('extension-manager.type');
 
 	if (!token || !projectId) {
 		vscode.window.showErrorMessage('Project ID or token is missing.');
 		return;
 	}
 
-	await getExtensions(context, token, gitlabHost, projectId);
+	if (!type) {
+		type = 'projects';
+	}
+
+	await getExtensions(context, token, gitlabHost, type, projectId);
 	await getInstalledExtensions(context);
 	await getMarketplaceExtensions(context);
 
