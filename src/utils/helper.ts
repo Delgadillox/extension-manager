@@ -1,14 +1,17 @@
 import axios from 'axios';
 import * as vscode from 'vscode';
+import * as semver from 'semver';
+import * as path from 'path';
 import { ExtensionItem } from '../classes/ExtensionItem';
 
 export async function getExtensions(
-  context: vscode.ExtensionContext,
-  token: string,
-  gitlabHost: string,
-  projectId: string
+	context: vscode.ExtensionContext,
+	token: string,
+	gitlabHost: string,
+	type: string,
+	projectId: string
 ) {
-  const url = `https://${gitlabHost}/api/v4/projects/${projectId}/packages`;
+	const url = `https://${gitlabHost}/api/v4/${type}/${projectId}/packages`;
 
 	try {
 		const response = await axios.get(url, {
@@ -19,6 +22,9 @@ export async function getExtensions(
 
 		// Map each package to fetch its details
 		const packageRequests = response.data.map(async (pkg: any) => {
+			if (type === 'groups') {
+				projectId = pkg.project_id;
+			}
 			const packageUrl = `https://${gitlabHost}/api/v4/projects/${projectId}/packages/${pkg.id}`;
 			try {
 				const pkgResponse = await axios.get(packageUrl, {
@@ -53,7 +59,8 @@ export async function getExtensions(
 					packageInfo.id,
 					file?.id || 0,
 					fileName,
-					vscode.Uri.parse(fileUri)
+					vscode.Uri.parse(fileUri),
+					projectId
 				);
 
 				return extensionItem;
@@ -63,15 +70,35 @@ export async function getExtensions(
 			}
 		});
 
-		// Flatten the results and filter out nulls
 		const allItems = (await Promise.all(packageRequests)).filter(
 			(item): item is ExtensionItem => item !== null
 		);
 
-		// Save to global state
-		await context.globalState.update('allExtensions', allItems);
+		const groupedByName = allItems.reduce(
+			(acc: { [key: string]: ExtensionItem }, item) => {
+				const existingItem = acc[item.label];
+
+				if (!existingItem) {
+					acc[item.label] = item;
+				} else {
+					const itemVersion = semver.clean(item.version) || item.version;
+					const existingVersion =
+						semver.clean(existingItem.version) || existingItem.version;
+
+					if (semver.gt(itemVersion, existingVersion)) {
+						acc[item.label] = item;
+					}
+				}
+				return acc;
+			},
+			{}
+		);
+
+		const mostRecentExtensions = Object.values(groupedByName);
+		await context.globalState.update('allExtensions', mostRecentExtensions);
 	} catch (error) {
 		console.error('Extensions. Failed to fetch packages:', error);
+		context.globalState.update('allExtensions', []);
 		vscode.window.showErrorMessage('Failed to fetch data.');
 	}
 }
@@ -85,28 +112,37 @@ export async function getInstalledExtensions(context: vscode.ExtensionContext) {
 			.map((ext) => ({
 				id: ext.id.split('.')[1],
 				version: ext.packageJSON.version,
+				logoPath: ext.packageJSON.icon
+					? vscode.Uri.file(path.join(ext.extensionPath, ext.packageJSON.icon))
+					: vscode.Uri.file(
+							path.join(__filename, '..', '..', 'assets', 'gitlab-logo-500.svg')
+					  ),
 			}))
 			.reduce((map, ext) => {
-				map.set(ext.id, ext.version);
+				map.set(ext.id, { version: ext.version, logoPath: ext.logoPath });
 				return map;
-			}, new Map<string, string>());
+			}, new Map<string, { version: string; logoPath?: vscode.Uri }>());
 
 		const matchedExtensions = allExtensions
 			.filter((item) => {
-				const installedVersion = installedExtensions.get(item.label);
-				return installedVersion && installedVersion === item.version;
+				const installedExtension = installedExtensions.get(item.label);
+				return (
+					installedExtension && installedExtension.version === item.version
+				);
 			})
-			.map(
-				(item) =>
-					new ExtensionItem(
-						item.label,
-						item.version,
-						item.id,
-						item.fileId,
-						item.file_name,
-						item.fileUri
-					)
-			);
+			.map((item) => {
+				const installedExtension = installedExtensions.get(item.label);
+				return new ExtensionItem(
+					item.label,
+					item.version,
+					item.id,
+					item.fileId,
+					item.file_name,
+					item.fileUri,
+					item.projectId,
+					installedExtension?.logoPath
+				);
+			});
 
 		console.log('installed', matchedExtensions);
 		await context.globalState.update('installedExtensions', matchedExtensions);
@@ -144,7 +180,8 @@ export async function getMarketplaceExtensions(
 						item.id,
 						item.fileId,
 						item.file_name,
-						item.fileUri
+						item.fileUri,
+						item.projectId
 					)
 			);
 
